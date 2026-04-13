@@ -3,55 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pattern Lock Practice</title>
+<title>Pattern Lock - Dark UI</title>
 <style>
   :root {
-    --primary: #378ADD; --primary-dark: #185FA5;
-    --warn: #E24B4A; --warn-dark: #A32D2D;
-    --dot-bg: #ccc; --dot-border: #999; --text: #666;
+    --bg: #050505;
+    --surface: #141414;
+    --surface-border: #2a2a2a;
+    --primary: #3498db;      /* Xiaomi Blue */
+    --primary-glow: rgba(52, 152, 219, 0.25);
+    --warn: #e74c3c;
+    --warn-glow: rgba(231, 76, 60, 0.25);
+    --dot-idle: #444;
+    --text-main: #f0f0f0;
+    --text-sub: #888;
   }
+  
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; }
+  body { font-family: sans-serif; background: var(--bg); color: var(--text-main); display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; overflow-x: hidden; }
   
   #plw { width: 100%; max-width: 360px; }
-  #grid-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto; touch-action: none; }
+  #grid-wrap { position: relative; width: 260px; height: 260px; margin: 0 auto; touch-action: none; }
   #grid { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; height: 100%; position: relative; z-index: 2; }
   svg.lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
   
-  .dot-wrap { display: flex; align-items: center; justify-content: center; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot-bg); border: 1.5px solid var(--dot-border); transition: 0.1s; }
-  .dot.active { background: var(--primary); border-color: var(--primary-dark); transform: scale(1.5); }
-  .dot.warn { background: var(--warn); border-color: var(--warn-dark); transform: scale(1.5); }
+  .dot-wrap { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
   
-  #info { text-align: center; margin-top: 1.2rem; }
-  #counter { font-size: 13px; color: var(--text); margin-bottom: 5px; }
-  #status { font-size: 14px; font-weight: 500; min-height: 22px; color: #888; }
-  #status.ok { color: #1D9E75; }
+  /* Redmi-style Reactive Dots */
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--dot-idle); transition: all 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28); position: relative; }
+  .dot::before { content: ''; position: absolute; inset: -20px; border-radius: 50%; background: transparent; transition: all 0.2s ease-out; z-index: -1; transform: scale(0.5); }
+  
+  .dot.active { background: var(--primary); transform: scale(1.1); }
+  .dot.active::before { background: var(--primary-glow); transform: scale(1); }
+  
+  .dot.warn { background: var(--warn); }
+  .dot.warn::before { background: var(--warn-glow); transform: scale(1); }
+  
+  #info { text-align: center; margin-top: 2rem; }
+  #counter { font-size: 13px; color: var(--text-sub); margin-bottom: 5px; letter-spacing: 0.5px; }
+  #status { font-size: 15px; font-weight: 400; min-height: 24px; color: var(--text-sub); }
+  #status.ok { color: #2ecc71; }
   #status.warn { color: var(--warn); }
   
-  .btns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
-  button { padding: 5px 16px; font-size: 13px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 6px; }
-  button:hover { background: #f0f0f0; }
+  .btns { display: flex; gap: 12px; justify-content: center; margin-top: 15px; }
+  button { padding: 8px 20px; font-size: 13px; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface); color: var(--text-main); border-radius: 20px; transition: 0.2s; }
+  button:hover { background: #222; border-color: #444; }
   
-  #hist-panel { margin-top: 1.2rem; border-top: 1px solid #e0e0e0; padding-top: 1rem; display: none; }
-  #hist-panel.open { display: block; }
-  #hist-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-  .hcard { background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 6px 8px; cursor: pointer; text-align: center; }
-  .hcard:hover { border-color: #999; }
-  .hcard.warn-card { border-color: var(--warn); }
-  .hlabel { font-size: 10px; color: var(--dot-border); display: block; margin-top: 4px; }
+  #hist-panel { margin-top: 1.5rem; border-top: 1px solid var(--surface-border); padding-top: 1rem; display: none; }
+  #hist-panel.open { display: block; animation: fadein 0.3s; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   
-  #preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 100; }
-  #preview-modal.open { display: flex; }
-  #preview-box { background: #fff; border-radius: 12px; padding: 1.2rem; text-align: center; min-width: 220px; }
-  .psub { font-size: 12px; color: var(--text); margin-top: 8px; }
+  #hist-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .hcard { background: var(--surface); border: 1px solid var(--surface-border); border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; transition: 0.2s; }
+  .hcard:hover { border-color: #555; transform: translateY(-2px); }
+  .hcard.warn-card { border-color: rgba(231, 76, 60, 0.4); }
+  .hlabel { font-size: 11px; color: var(--text-sub); display: block; margin-top: 6px; }
+  
+  #preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; }
+  #preview-modal.open { display: flex; animation: fadein 0.2s; }
+  #preview-box { background: var(--surface); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--surface-border); text-align: center; min-width: 240px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  #pv-title { margin-bottom: 15px; font-weight: 500; letter-spacing: 0.5px; }
+  .psub { font-size: 12px; color: var(--text-sub); margin-top: 10px; }
 </style>
 </head>
 <body>
 
 <div id="plw">
   <div id="grid-wrap">
-    <svg id="lines" class="lines" viewBox="0 0 220 220"></svg>
+    <svg id="lines" class="lines" viewBox="0 0 260 260"></svg>
     <div id="grid"></div>
   </div>
   <div id="info">
@@ -63,21 +81,21 @@
     </div>
   </div>
   <div id="hist-panel">
-    <div style="font-size: 13px; color: #666; text-align: center; margin-bottom: 10px;">Last 20 patterns</div>
+    <div style="font-size: 13px; color: var(--text-sub); text-align: center; margin-bottom: 12px;">Last 20 patterns</div>
     <div id="hist-list"></div>
   </div>
 </div>
 
 <div id="preview-modal">
   <div id="preview-box">
-    <h3 id="pv-title" style="margin-bottom:12px;">Pattern #1</h3>
+    <h3 id="pv-title">Pattern #1</h3>
     <div style="position:relative;width:140px;height:140px;margin:0 auto;">
       <svg id="pv-lines" class="lines" viewBox="0 0 140 140"></svg>
       <div id="pv-dots" style="display:grid;grid-template-columns:repeat(3,1fr);height:100%;position:relative;z-index:2;"></div>
     </div>
     <div class="psub" id="pv-seq"></div>
     <div class="psub" id="pv-warn" style="color:var(--warn);min-height:16px;"></div>
-    <button id="preview-close" style="margin-top:12px;">Close</button>
+    <button id="preview-close" style="margin-top:15px; width: 100%;">Close</button>
   </div>
 </div>
 
@@ -88,28 +106,41 @@
   const histList = document.getElementById('hist-list'), histBtn = document.getElementById('hist-btn');
   const modal = document.getElementById('preview-modal');
   
+  const SIZE = 260; // Base rendering size
   let current = [], drawing = false, attempts = 0, lastPattern = null, history = [];
+  let activePos = null; // Tracks the live cursor position
+
   const getPt = (i, size) => ({ x: (i%3)*size/3 + size/6, y: Math.floor(i/3)*size/3 + size/6 });
 
-  // Init Main Grid
+  // Init Main Grid Dots
   grid.innerHTML = Array.from({length: 9}, (_, i) => `<div class="dot-wrap"><div class="dot" id="d${i}"></div></div>`).join('');
 
-  function drawSVG(pts, warn, size) {
+  // Enhanced SVG Draw function that includes the live cursor tracking line
+  function drawSVG(pts, warn, size, cursor) {
     const color = warn ? 'var(--warn)' : 'var(--primary)';
-    return pts.slice(1).map((p, i) => {
+    
+    // Draw lines between established dots
+    let lines = pts.slice(1).map((p, i) => {
       let a = getPt(pts[i], size), b = getPt(p, size);
-      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
+      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`;
     }).join('');
+
+    // Draw the active line following the finger/mouse
+    if (cursor && pts.length > 0) {
+      let last = getPt(pts[pts.length - 1], size);
+      lines += `<line x1="${last.x}" y1="${last.y}" x2="${cursor.x}" y2="${cursor.y}" stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.6"/>`;
+    }
+    return lines;
   }
 
   function miniSVG(pts, warn) {
     const c = warn ? 'var(--warn)' : 'var(--primary)';
-    let lines = drawSVG(pts, warn, 60);
+    let lines = drawSVG(pts, warn, 70, null);
     let dots = Array.from({length: 9}, (_, i) => {
-      let act = pts.includes(i), fst = pts[0]===i;
-      return `<circle cx="${getPt(i, 60).x}" cy="${getPt(i, 60).y}" r="${act?3.5:2}" fill="${act?(fst?'var(--primary-dark)':c):'#888'}"/>`;
+      let act = pts.includes(i);
+      return `<circle cx="${getPt(i, 70).x}" cy="${getPt(i, 70).y}" r="${act?3.5:2}" fill="${act?c:'#444'}"/>`;
     }).join('');
-    return `<svg width="60" height="60" viewBox="0 0 60 60">${lines}${dots}</svg>`;
+    return `<svg width="70" height="70" viewBox="0 0 70 70">${lines}${dots}</svg>`;
   }
 
   function renderHistory() {
@@ -128,41 +159,55 @@
     document.getElementById('pv-title').textContent = `Pattern #${h.num}`;
     document.getElementById('pv-warn').textContent = h.warn ? '⚠ Same as previous' : '';
     document.getElementById('pv-seq').textContent = 'Seq: ' + h.pts.join(' → ');
-    document.getElementById('pv-lines').innerHTML = drawSVG(h.pts, h.warn, 140);
+    document.getElementById('pv-lines').innerHTML = drawSVG(h.pts, h.warn, 140, null);
     
     document.getElementById('pv-dots').innerHTML = Array.from({length: 9}, (_, i) => {
-      let act = h.pts.includes(i), fst = h.pts[0]===i;
-      let bg = act ? (h.warn ? 'var(--warn)' : (fst ? 'var(--primary-dark)' : 'var(--primary)')) : 'var(--dot-bg)';
-      let bc = act ? (h.warn ? 'var(--warn-dark)' : 'var(--primary-dark)') : 'var(--dot-border)';
-      return `<div class="dot-wrap"><div style="width:10px;height:10px;border-radius:50%;background:${bg};border:1.5px solid ${bc}"></div></div>`;
+      let act = h.pts.includes(i);
+      let bg = act ? (h.warn ? 'var(--warn)' : 'var(--primary)') : 'var(--dot-idle)';
+      return `<div class="dot-wrap"><div style="width:8px;height:8px;border-radius:50%;background:${bg};"></div></div>`;
     }).join('');
     modal.classList.add('open');
   }
 
+  // Unified logic for mouse and touch mapping screen to SVG coordinates
   function handlePointer(e) {
-    if (!drawing && e.type !== 'pointerdown') return;
-    e.preventDefault();
-    const rect = grid.getBoundingClientRect();
-    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-    const col = Math.floor(x / (rect.width/3)), row = Math.floor(y / (rect.height/3));
-    const i = row * 3 + col;
-
     if (e.type === 'pointerdown') {
-      drawing = true; current = [];
+      drawing = true; current = []; activePos = null;
       document.querySelectorAll('.dot').forEach(d => d.className = 'dot');
-      statusEl.className = ''; statusEl.textContent = 'Drawing...';
+      statusEl.className = ''; statusEl.textContent = 'Release to save';
     }
     
-    if (col >= 0 && col <= 2 && row >= 0 && row <= 2 && !current.includes(i)) {
-      current.push(i);
-      document.getElementById('d'+i).classList.add('active');
-      svg.innerHTML = drawSVG(current, false, 220);
+    if (!drawing) return;
+    
+    // Calculate live position inside the grid
+    const rect = grid.getBoundingClientRect();
+    const rawX = e.clientX - rect.left;
+    const rawY = e.clientY - rect.top;
+    activePos = { x: rawX * (SIZE / rect.width), y: rawY * (SIZE / rect.height) };
+
+    // Radial distance check (much smoother than grid boxes)
+    for (let i = 0; i < 9; i++) {
+      if (current.includes(i)) continue;
+      let pt = getPt(i, SIZE);
+      let dist = Math.hypot(activePos.x - pt.x, activePos.y - pt.y);
+      
+      // If cursor is within 40px of a dot's center, snap to it
+      if (dist < 40) {
+        current.push(i);
+        document.getElementById('d'+i).classList.add('active');
+        if (navigator.vibrate) navigator.vibrate(15); // Tiny haptic bump
+        break; 
+      }
     }
+    
+    svg.innerHTML = drawSVG(current, false, SIZE, activePos);
   }
 
   function finishPattern() {
     if (!drawing) return;
     drawing = false;
+    activePos = null; // Clear cursor line
+    
     if (current.length < 2) return resetDots();
     
     attempts++; counterEl.textContent = 'Attempts: ' + attempts;
@@ -171,7 +216,7 @@
     statusEl.textContent = isDupe ? '⚠ Same pattern as last time!' : `Pattern saved (${current.length} dots)`;
     
     if (isDupe) current.forEach(i => document.getElementById('d'+i).classList.replace('active', 'warn'));
-    svg.innerHTML = drawSVG(current, isDupe, 220);
+    svg.innerHTML = drawSVG(current, isDupe, SIZE, null);
     
     history.unshift({ pts: [...current], num: attempts, warn: isDupe });
     if (history.length > 20) history.pop();
@@ -181,17 +226,19 @@
   }
 
   function resetDots() {
-    drawing = false; current = []; svg.innerHTML = '';
+    drawing = false; current = []; svg.innerHTML = ''; activePos = null;
     document.querySelectorAll('.dot').forEach(d => d.className = 'dot');
     if (statusEl.className !== 'warn') { statusEl.className = ''; statusEl.textContent = 'Draw your pattern'; }
   }
 
-  // Pointer Events unification (replaces mouse/touch mix)
+  // Pointer Events
   grid.addEventListener('pointerdown', handlePointer);
-  grid.addEventListener('pointermove', handlePointer);
+  window.addEventListener('pointermove', (e) => {
+      if(drawing) { e.preventDefault(); handlePointer(e); } // Only prevent default if actively dragging
+  }, { passive: false });
   window.addEventListener('pointerup', finishPattern);
 
-  // UI Event Listeners
+  // Buttons
   histBtn.onclick = () => { document.getElementById('hist-panel').classList.toggle('open'); };
   document.getElementById('reset-btn').onclick = () => {
     resetDots(); attempts = 0; lastPattern = null; history = [];
